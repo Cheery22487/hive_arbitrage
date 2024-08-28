@@ -14,5 +14,6 @@ While this example is easy to understand, this is barely ever the case and there
 
 Real example (28 August 2024): 10 Hive -> 128.205 Voucher -> 260.565 -> 21.700 BEE -> 1.808 USDT -> 10.07 Hive.
 
-Also sometimes liquidity pools are tipped so significantly that there is profit to be made by doing a swaps in a circle: Real example (28 August 2024):
-21.903 BEE -> 0.0007161 ETH -> 0.00003063 BTC -> 21.980 BEE
+Also sometimes liquidity pools are tipped so significantly that there is profit to be made by doing a swaps in a circle: 
+
+Real example (28 August 2024):21.903 BEE -> 0.0007161 ETH -> 0.00003063 BTC -> 21.980 BEE
