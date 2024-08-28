@@ -1,5 +1,5 @@
 # Overview
-This is a small arbitrage bot working on the hive blockchain.
+This is a small arbitrage bot working on the hive blockchain. It is just a small passion project and therefore lacking documentation mostly.
 
 !Note: This bot will only work when you provide a working account with a postingkey and activekey.
 
@@ -20,3 +20,6 @@ Real example (28 August 2024): 10 Hive -> 128.205 Voucher -> 260.565 SPS -> 21.7
 Also sometimes liquidity pools are tipped so significantly that there is profit to be made by doing a swaps in a circle: 
 
 Real example (28 August 2024): 21.903 BEE -> 0.0007161 ETH -> 0.00003063 BTC -> 21.980 BEE
+
+# Work in progress
+work in progress
