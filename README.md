@@ -15,7 +15,7 @@ For example: If a person has a lot of Bitcoin and sells them on the market, it w
 
 While this example is easy to understand, this is barely ever the case and there are other bots already taking advantage of such simple cases. In reality, the opportunity for profitable trades arises mostly when liquidity pools are slightly tipped in one direction and the algorithm can discover a route of liquidity swaps after which it has increased its amount of tokens.
 
-Real example (28 August 2024): 10 Hive -> 128.205 Voucher -> 260.565 -> 21.700 BEE -> 1.808 USDT -> 10.07 Hive.
+Real example (28 August 2024): 10 Hive -> 128.205 Voucher -> 260.565 SPS -> 21.700 BEE -> 1.808 USDT -> 10.07 Hive.
 
 Also sometimes liquidity pools are tipped so significantly that there is profit to be made by doing a swaps in a circle: 
 
