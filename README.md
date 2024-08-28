@@ -10,7 +10,7 @@ There are two main ways of trading tokens. You can use the market with buy- and 
 
 For example: If a person has a lot of Bitcoin and sells them on the market, it will lower the price of bitcoin on the market. But the price in the liquidity pool remains unchanged. If you are the first one to notice such a case, you can then buy the bitcoin at a lower price on the open market and then sell it in the liquidity pool and make a profit.
 
-While this example is easy to understand, this is barely never the case and there are other bots already taking advantage of such simple cases. Most of the time, the trades arise when a liquidity pool is slightly tipped in one direction and the algorithm can find profit by detecting a couple of liquidity swaps after which it has increased its amount of tokens.
+While this example is easy to understand, this is barely ever the case and there are other bots already taking advantage of such simple cases. Most of the time, the trades arise when a liquidity pool is slightly tipped in one direction and the algorithm can find profit by detecting a couple of liquidity swaps after which it has increased its amount of tokens.
 
 Real example (28 August 2024): Using 10 Hive to buy 128.205 Voucher on the Market. Swapping 128.205 Voucher for 260.565 SPS using a liquidity pool. Swapping 260.565 SPS for 21.700 BEE using a liquidity pool. Swapping 21.700 BEE to 1.808 USDT using a liquidity pool. Selling 1.808 USDT on the market for 10.07 Hive.
 
