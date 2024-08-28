@@ -11,7 +11,7 @@ And you can explore the blockchain interactions here: https://hivehub.dev/@curse
 # Where is the profit coming from?
 There are two main ways of trading tokens. You can use the market with buy- and sellorders (https://hive-engine.com/trade/SWAP.BTC) or use a liquidity pool (https://beeswap.dcity.io/swap?input=SWAP.HIVE&output=SWAP.BTC). As both options are in theory independent of eachother in terms of price discovery, there may arise somewhat significant differences in price.
 
-For example: If a person has a lot of Bitcoin and sells them on the market, it will lower the price of bitcoin on the market. The price in the liquidity pool remains unchanged. If you are the first one to notice such a case, you can buy BTC at a lower price on the open market, swap it back to your starting currency using a liquidity pool and make a profit.
+For example: If a person has a lot of Bitcoin and sells them on the market, it will lower the price of bitcoin on the market. The price in the liquidity pool however remains unchanged. If you are the first one to notice such a case, you can buy BTC at a lower price on the open market, swap it back to your starting currency using a liquidity pool and make a profit.
 
 While this example is easy to understand, this is barely ever the case and there are other bots already taking advantage of such simple cases. In reality, the opportunity for profitable trades arises mostly when liquidity pools are slightly tipped in one direction and the algorithm can discover a route of liquidity swaps after which it has increased its amount of tokens.
 
