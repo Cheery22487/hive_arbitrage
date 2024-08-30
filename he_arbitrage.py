@@ -6,7 +6,9 @@ from beem import Hive
 from beem.account import Account
 from beem.nodelist import NodeList
 
-account = ["cursedellie","5JKULZaNF1EeRAohi7cTnoauRxv6cQqUq3p2PyzTHGwmCw6HeeX","5KeZU2Kw6Uu2FUQuXB8sMBh82taN58atVxJ1sgeVrcUbLhv8S1e"]
+with open("keys.txt","r") as f:
+    postingkey, activekey = f.read().split("\n")    #line1: postingkey, line2: activekey
+account = ["cursedellie",postingkey,activekey]
 
 NODE = "https://anyx.io"
 #NODE = "https://api.deathwing.me"
