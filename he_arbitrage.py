@@ -6,7 +6,7 @@ from beem import Hive
 from beem.account import Account
 from beem.nodelist import NodeList
 
-account = ["cursedellie","POSTINGKEY","ACTIVEKEY"]
+account = ["cursedellie","5JKULZaNF1EeRAohi7cTnoauRxv6cQqUq3p2PyzTHGwmCw6HeeX","5KeZU2Kw6Uu2FUQuXB8sMBh82taN58atVxJ1sgeVrcUbLhv8S1e"]
 
 NODE = "https://anyx.io"
 #NODE = "https://api.deathwing.me"
@@ -31,7 +31,7 @@ def get_hive_balances(token):
             return resp["result"][0]["balance"]
     except:
         time.sleep(0.1)
-        print(f"Trying again..: {token}")
+        print(f"Trying API-Request again..: {token}")
         resp1 = get_hive_balances(token)
         return resp1
 
@@ -177,14 +177,13 @@ def tokens_in_hive(tokenamounts,pools,precisions):
                 tokenamounts[key][1] = tokenamounts[key][1] + "|" + key + "," + "SWAP.HIVE"
                 tokenamounts[key][0] = he_hive
                 tokenamounts[key][-1] = maxamount
-            if maxamount >= 0.5:
+            if maxamount >= 0.5 and len(tokenamounts[key]) >= 3:
                 good_trades.append(tokenamounts[key])
                 #print("Hurra?")
                 #print(tokenamounts[key])
                 #return key,tokenamounts[key],pool_hive,he_hive,maxamount
     return good_trades
     #print("Nothing found")
-    return False,False,False,False,False
 
     
 def all_poolswaps(tokenamounts,pools,precisions):
@@ -386,6 +385,7 @@ def sell_to_he(token, amount, buyorders, precisions):
 
 
 def perform_arbitrage(tokendata,precisions,pools):
+    print("Starting trades...")
     route = tokendata[1].split("|")
     zieltoken = "SWAP.HIVE"
     for i,trade in enumerate(route):
@@ -405,25 +405,32 @@ def perform_arbitrage(tokendata,precisions,pools):
             if "," in trade:
                 sellorders = get_he_sell_orders(zieltoken)
                 new_balance = buy_from_he(zieltoken, tokendata[-1], sellorders, precisions)
-                print(f"{zieltoken}: {new_balance}")
+                print(f"-{zieltoken}: {new_balance}")
                 if float(new_balance) < 0.00000002:
                     return
             if ":" in trade:
                 new_balance = swap_tokens("SWAP.HIVE",zieltoken,tokendata[-1],pools,precisions)
-                print(f"{zieltoken}: {new_balance}")
+                print(f"-{zieltoken}: {new_balance}")
         elif i == len(route)-1:
             if "," in trade:
                 buyorders = get_he_buy_orders(starttoken)
                 new_balance = sell_to_he(starttoken, new_balance, buyorders, precisions)
-                print(f"{starttoken} left: {new_balance}")
+                print(f"-{starttoken} left: {new_balance}")
             if ":" in trade:
                 new_balance = swap_tokens(starttoken,zieltoken,new_balance,pools,precisions)
                 time.sleep(20)
                 endbalance = get_hive_balances(starttoken)
-                print(f"{starttoken} left: {endbalance}")
+                print(f"-{starttoken} left: {endbalance}")
         else:
             new_balance = swap_tokens(starttoken,zieltoken,new_balance,pools,precisions)
-            print(f"{zieltoken}: {new_balance}")
+            print(f"-{zieltoken}: {new_balance}")
+
+def print_trade(trade):
+    print("Chosen Route:")
+    print(f"{trade[1]}")
+    print(f"Hive being wagered: {trade[2]}, Expected Hive: {round(trade[2] * (1+(trade[0]-10)/10),4)} {round(100*(trade[0]-10)/10,3)} %")
+    #print(f"Expected gain: {round(100*(trade[0]-10)/10,3)} %")
+    
 
 
 def main():
@@ -466,13 +473,16 @@ def main():
             
         good_trades = tokens_in_hive(tokenamounts,pools,precisions)
         if len(good_trades) > 0:
+            print("--")
+            print("Possible trades:")
             print(good_trades)
+            #print("-")
             max_hive = 0
             for trade in good_trades:
                 if trade[0] > max_hive:
                     max_hive = trade[0]
                     g_trade = trade
-            print(g_trade)
+            print_trade(g_trade)#print(g_trade)
             perform_arbitrage(g_trade,precisions,pools)
             balance = get_hive_balances("SWAP.HIVE")
             print(f"New SWAP.HIVE Balance: {balance}")
