@@ -17,7 +17,11 @@ pool_rpc = "https://engine.beeswap.tools"
 
 hive = Hive(keys=[account[2],account[1]],node=NODE)
 
-tokenlist = ["DEC","SPS","BEE","SWAP.USDT","SWAP.BTC","VOUCHER","SWAP.DOGE","SWAP.LTC","SWAP.HBD","SWAP.ETH","PART","SHARD","SWAP.BNB","CHAOS","BEE","LEO","LGN"]
+HIVE_TESTAMOUNT = 5                         #amount of hive initially tested in swawps/trades
+MAXIMUM_TRADEAMOUNT = 15                    #absolute maximum amount of hive wagered per trade, atleast 5
+MAXIMUM_SHARE_TRADED = 0.1                  #maximum share of owned hive wagered per trade
+
+tokenlist = ["DEC","SPS","BEE","SWAP.USDT","SWAP.BTC","VOUCHER","SWAP.DOGE","SWAP.LTC","SWAP.HBD","SWAP.ETH","PART","SHARD","SWAP.BNB","CHAOS","BEE","LEO","LGN","SWAP.BLURT"]
 
 #bannedpools = ["DEC:SUFB","SWAP.HIVE:SWAP.WAX","BEE:SWAP.WAX","SPS:SWAP.WAX","SPS:SWAP.SLP","SWAP.AXS:SWAP.SLP","SPS:SWAP.AXS","SPS:SWAP.GALA","SPS:FSPS","STARBITS:SWAP.HBD","DEC:VOID","SWAP.HIVE:SEED","SWAP.HBD:SEED"]
 bannedpools = []
@@ -160,31 +164,31 @@ def get_pool_trade_multi(starttoken,tradetoken,amount,pools,precisions,multi):
 
 def tokens_in_hive(tokenamounts,pools,precisions):
     good_trades = []
+    buyorders_dict = {}
     for key,value in tokenamounts.items():
         time.sleep(0.02)
         pool_hive = get_pool_trade(key,"SWAP.HIVE",value[0],pools,precisions)
         buyorders = get_he_buy_orders(key)
+        buyorders_dict[key+",SWAP.HIVE"] = buyorders
         if len(buyorders) <= 0:
             continue
         he_hive = value[0]*float(buyorders[0]["price"])
         #he_hive = round_down(he_hive, int(precisions["SWAP.HIVE"]))
         #print(key,pool_hive,he_hive)
-        maxamount = min(value[-1],float(buyorders[0]["quantity"]) * float(buyorders[0]["price"]))
+        maxamount = min(value[2],float(buyorders[0]["quantity"]) * float(buyorders[0]["price"]))
         
-        if (pool_hive != False and (pool_hive >= 10*1.005 or (pool_hive > 10*1.004 and len(tokenamounts[key][1].split("|")) <= 3))) or (he_hive != False and (he_hive >= 10*1.005 or (he_hive > 10*1.004 and len(tokenamounts[key][1].split("|")) <= 3))):
+        if (pool_hive != False and (pool_hive >= HIVE_TESTAMOUNT*1.005 or (pool_hive > HIVE_TESTAMOUNT*1.004 and len(tokenamounts[key][1].split("|")) <= 3))) or (he_hive != False and (he_hive >= HIVE_TESTAMOUNT*1.005 or (he_hive > HIVE_TESTAMOUNT*1.004 and len(tokenamounts[key][1].split("|")) <= 3))):
             if (pool_hive != False and he_hive != False and pool_hive > he_hive) or (pool_hive != False and he_hive == False):
                 tokenamounts[key][1] = tokenamounts[key][1] + "|" + key + ":" + "SWAP.HIVE"
                 tokenamounts[key][0] = pool_hive
             elif (pool_hive != False and he_hive != False and he_hive > pool_hive) or (he_hive != False and pool_hive == False):
                 tokenamounts[key][1] = tokenamounts[key][1] + "|" + key + "," + "SWAP.HIVE"
                 tokenamounts[key][0] = he_hive
-                tokenamounts[key][-1] = maxamount
-            if maxamount >= 0.5 and len(tokenamounts[key]) >= 3:
+                tokenamounts[key][2] = maxamount
+            #preventing the most simple case of buy on market & then sell in pool or the other way around. Other bots seem to be faster and it often ends up a losing venture
+            if maxamount >= 0.5 and len(tokenamounts[key][1]) >= 3:          #minimum 0.5 hive traded to not accrue too much rc costs   
                 good_trades.append(tokenamounts[key])
-                #print("Hurra?")
-                #print(tokenamounts[key])
-                #return key,tokenamounts[key],pool_hive,he_hive,maxamount
-    return good_trades
+    return good_trades, buyorders_dict
     #print("Nothing found")
 
     
@@ -198,17 +202,18 @@ def all_poolswaps(tokenamounts,pools,precisions):
                 if key == tokenpair[0]:
                     new_amount = get_pool_trade(key,tokenpair[1],value[0],pools,precisions)
                     #print(tokenpair[1],value[0],new_amount)
-                    tokenamounts2[tokenpair[1]] = [new_amount,value[1]+"|"+key+":"+tokenpair[1],value[-1]]
+                    tokenamounts2[tokenpair[1]] = [new_amount,value[1]+"|"+key+":"+tokenpair[1],value[2]]
                 elif key == tokenpair[1]:
                     new_amount = get_pool_trade(key,tokenpair[0],value[0],pools,precisions)
                     #print(tokenpair[0],value[0],new_amount)
-                    tokenamounts2[tokenpair[0]] = [new_amount,value[1]+"|"+key+":"+tokenpair[0],value[-1]]
+                    tokenamounts2[tokenpair[0]] = [new_amount,value[1]+"|"+key+":"+tokenpair[0],value[2]]
     #print(tokenamounts2)
     return tokenamounts2
 
 def all_poolswaps_2(tokenamounts,pools,precisions):
     tokenamounts2 = {}
     for key,value in tokenamounts.items():
+        prev_values = value[-1]
         if key not in tokenamounts2.keys():
             tokenamounts2[key] = value
         elif tokenamounts[key][0] > tokenamounts2[key][0]:
@@ -226,7 +231,7 @@ def all_poolswaps_2(tokenamounts,pools,precisions):
                     else:
                         new_amount = get_pool_trade(key,tokenpair[1],value[0],pools,precisions)
                     token_temp = tokenpair[1]
-                    tokenamounts_temp = [new_amount,value[1]+"|"+key+":"+tokenpair[1],value[-1]]
+                    tokenamounts_temp = [new_amount,value[1]+"|"+key+":"+tokenpair[1],value[2]]
                 elif key == tokenpair[1]:
                     if tknpair in tokenamounts[key][1] or tknpair2 in tokenamounts[key][1]:
                         count = tokenamounts[key][1].count(tknpair) + tokenamounts[key][1].count(tknpair2)
@@ -234,11 +239,13 @@ def all_poolswaps_2(tokenamounts,pools,precisions):
                     else:
                         new_amount = get_pool_trade(key,tokenpair[0],value[0],pools,precisions)
                     token_temp = tokenpair[0]
-                    tokenamounts_temp = [new_amount,value[1]+"|"+key+":"+tokenpair[0],value[-1]]
+                    tokenamounts_temp = [new_amount,value[1]+"|"+key+":"+tokenpair[0],value[2]]
                 if token_temp not in tokenamounts2.keys():
                     tokenamounts2[token_temp] = tokenamounts_temp
+                    tokenamounts2[token_temp].append(prev_values+","+str(tokenamounts_temp[0]))
                 elif new_amount > tokenamounts2[token_temp][0]:
                     tokenamounts2[token_temp] = tokenamounts_temp
+                    tokenamounts2[token_temp].append(prev_values+","+str(tokenamounts_temp[0]))
     #print(tokenamounts2)
     return tokenamounts2
 
@@ -334,7 +341,7 @@ def buy_from_he(token, amount, sellorders, precisions):
     #print(listing_id)
     listing_id = check_buy_listings(token)
     if listing_id != 0:
-        print("cancel buy-listing")
+        print("Buyorder didnt get filled instantly: cancel buy-listing")
         cancel_listing([listing_id], "buy")
         time.sleep(15)
         balance = get_hive_balances(token)
@@ -406,19 +413,19 @@ def perform_arbitrage(tokendata,precisions,pools):
         if i == 0:
             if "," in trade:
                 sellorders = get_he_sell_orders(zieltoken)
-                new_balance = buy_from_he(zieltoken, tokendata[-1], sellorders, precisions)
+                new_balance = buy_from_he(zieltoken, tokendata[2], sellorders, precisions)
                 print(f"-{zieltoken}: {new_balance}")
                 if float(new_balance) < 0.00000002:
                     return
-            if ":" in trade:
-                new_balance = swap_tokens("SWAP.HIVE",zieltoken,tokendata[-1],pools,precisions)
+            elif ":" in trade:
+                new_balance = swap_tokens("SWAP.HIVE",zieltoken,tokendata[2],pools,precisions)
                 print(f"-{zieltoken}: {new_balance}")
         elif i == len(route)-1:
             if "," in trade:
                 buyorders = get_he_buy_orders(starttoken)
                 new_balance = sell_to_he(starttoken, new_balance, buyorders, precisions)
                 print(f"-{starttoken} left: {new_balance}")
-            if ":" in trade:
+            elif ":" in trade:
                 new_balance = swap_tokens(starttoken,zieltoken,new_balance,pools,precisions)
                 time.sleep(20)
                 endbalance = get_hive_balances(starttoken)
@@ -430,9 +437,56 @@ def perform_arbitrage(tokendata,precisions,pools):
 def print_trade(trade):
     print("Chosen Route:")
     print(f"{trade[1]}")
-    print(f"Hive being wagered: {trade[2]}, Expected Hive: {round(trade[2] * (1+(trade[0]-10)/10),4)} {round(100*(trade[0]-10)/10,3)} %")
-    #print(f"Expected gain: {round(100*(trade[0]-10)/10,3)} %")
-    
+    print(f"Hive being wagered: {trade[2]:.4f}, Expected Hive: {trade[2] * (1+(trade[0]-HIVE_TESTAMOUNT)/HIVE_TESTAMOUNT):.4f} (+{100*(trade[0]-HIVE_TESTAMOUNT)/HIVE_TESTAMOUNT:.3f}%)")
+
+def check_single_route(traderoute,amount,sellorders_dict,pools,buyorders_dict,precisions):
+    route = traderoute[1].split("|")
+    zieltoken = "SWAP.HIVE"
+    amount = round_down(amount, int(precisions["SWAP.HIVE"]))
+    for i,trade in enumerate(route):
+        starttoken = zieltoken
+        if "," in trade:
+            zieltoken = route[i].split(",")
+        elif ":" in trade:
+            zieltoken = route[i].split(":")
+        if starttoken == zieltoken[0]:
+            zieltoken = zieltoken[1]
+        elif starttoken == zieltoken[1]:
+            zieltoken = zieltoken[0]
+        if i == 0:
+            if "," in trade:
+                sellorders = sellorders_dict[route[0]]
+                new_balance = amount/float(sellorders[0]["price"])
+                maxamount = float(sellorders[0]["quantity"]) * float(sellorders[0]["price"])
+                if maxamount < amount:
+                    return 0
+                #print(float(sellorders[0]["quantity"]),float(sellorders[0]["price"]),maxamount)
+            elif ":" in trade:
+                new_balance = get_pool_trade("SWAP.HIVE",zieltoken,amount,pools,precisions)
+        elif i == len(route)-1:
+            if "," in trade and route[-1] in buyorders_dict.keys():
+                buyorders = buyorders_dict[route[-1]]
+                if new_balance > float(buyorders[0]["quantity"]):
+                    return 0
+                new_balance = new_balance*float(buyorders[0]["price"])
+            elif ":" in trade:
+                new_balance = get_pool_trade(starttoken,"SWAP.HIVE",new_balance,pools,precisions)
+            else:
+                print("Error3")
+                exit()
+        else:
+            tknpair = trade.split(":")
+            tknpair2 = ":".join([tknpair[1],tknpair[0]])
+            tknpair = ":".join(tknpair)
+            count = traderoute[1].count(tknpair) + traderoute[1].count(tknpair2) - 1
+            if count > 0:
+                new_balance = get_pool_trade_multi(starttoken,zieltoken,new_balance,pools,precisions,count)
+            else:
+                new_balance = get_pool_trade(starttoken,zieltoken,new_balance,pools,precisions)
+        new_balance = round_down(new_balance, int(precisions[zieltoken]))
+        #print(zieltoken, new_balance)
+
+    return new_balance
 
 
 def main():
@@ -440,58 +494,69 @@ def main():
     balance = get_hive_balances("SWAP.HIVE")
     print(f"SWAP.HIVE: {balance}")
     while True:
+        sellorders_dict = {}
+        max_trade_hive = min(MAXIMUM_TRADEAMOUNT,MAXIMUM_SHARE_TRADED*float(balance))
         tokenamounts = {}
+        for token in tokenlist:
+            sellorders_x = get_he_sell_orders(token)
+            sellorders_dict["SWAP.HIVE,"+token] = sellorders_x
+            time.sleep(0.01)
         pools = get_pools()
         if pools == False:
             continue
         for token in tokenlist:
             #print("---")
-            time.sleep(0.02)
-            sellorders = get_he_sell_orders(token)
+            sellorders = sellorders_dict["SWAP.HIVE,"+token]
             if pools == False or sellorders == False:
                 time.sleep(5)
                 continue
-            swapamount = get_pool_trade("SWAP.HIVE",token,10,pools,precisions)
-            #print(swapamount)
-            tokenamounts[token] = [swapamount,"SWAP.HIVE:"+token,10]
-            maxamount = min(float(sellorders[0]["quantity"]) * float(sellorders[0]["price"]),10)
+            swapamount = get_pool_trade("SWAP.HIVE",token,HIVE_TESTAMOUNT,pools,precisions)
+            tokenamounts[token] = [swapamount,"SWAP.HIVE:"+token,HIVE_TESTAMOUNT,str(swapamount)]
+            maxamount = min(float(sellorders[0]["quantity"]) * float(sellorders[0]["price"]),HIVE_TESTAMOUNT)
+
             he_amount = maxamount/float(sellorders[0]["price"])
             he_amount = round_down(he_amount, int(precisions[token]))
-            he_ghostamount = 10/float(sellorders[0]["price"])
+            he_ghostamount = HIVE_TESTAMOUNT/float(sellorders[0]["price"])
             he_ghostamount = round_down(he_ghostamount, int(precisions[token]))
-            #print(he_amount)
-            if he_ghostamount > tokenamounts[token][0]:        
-                tokenamounts[token] = [he_ghostamount, "SWAP.HIVE,"+token, maxamount]
-            #print(tokenamounts)
+            if he_ghostamount > tokenamounts[token][0]:
+                tokenamounts[token] = [he_ghostamount, "SWAP.HIVE,"+token, maxamount,str(he_ghostamount)]
 
             
-        #print(tokenamounts)
-        #tokenamounts = all_poolswaps(tokenamounts,pools,precisions)
-        #print(tokenamounts)
-        #final_token,tokendata,pool_hive,he_hive,he_maxxxx = tokens_in_hive(tokenamounts,pools)
         for i in range(10):
             tokenamounts = all_poolswaps_2(tokenamounts,pools,precisions)
 
             
-        good_trades = tokens_in_hive(tokenamounts,pools,precisions)
+        good_trades, buyorders_dict = tokens_in_hive(tokenamounts,pools,precisions)
+
         if len(good_trades) > 0:
             print("--")
             print("Possible trades:")
             print(good_trades)
-            #print("-")
+            #print("--")
             max_hive = 0
             for trade in good_trades:
                 if trade[0] > max_hive:
                     max_hive = trade[0]
                     g_trade = trade
-            print_trade(g_trade)#print(g_trade)
+            if int(g_trade[2]) == HIVE_TESTAMOUNT and max_trade_hive > HIVE_TESTAMOUNT:
+                poss_traded_hive_amounts = [HIVE_TESTAMOUNT + x*(max_trade_hive-HIVE_TESTAMOUNT)/9 for x in range(10)]
+                expected_returns = []
+                expected_diff = []
+                for amount in poss_traded_hive_amounts:
+                    expected_return = check_single_route(g_trade,amount,sellorders_dict,pools,buyorders_dict,precisions)
+                    expected_returns.append(expected_return)
+                    expected_diff.append(expected_return-amount)
+                max_value = max(expected_diff)
+                max_index = expected_diff.index(max_value)
+                best_tradeamount = poss_traded_hive_amounts[max_index]
+                g_trade[0] = float(best_tradeamount+max_value)*HIVE_TESTAMOUNT/best_tradeamount
+                g_trade[2] = best_tradeamount
+            print_trade(g_trade)
             perform_arbitrage(g_trade,precisions,pools)
             balance = get_hive_balances("SWAP.HIVE")
             print(f"New SWAP.HIVE Balance: {balance}")
-            #exit()
-                
-            #exit()
-            
+        #exit()
+
 
 if __name__ == '__main__':
     main()
