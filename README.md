@@ -1,5 +1,5 @@
 # Overview
-This is a small arbitrage bot working on the hive blockchain. It is just a small passion project and therefore lacking documentation mostly.
+This is a small arbitrage bot working on the hive blockchain. It is just a small personal project and is therefore lacking documentation mostly.
 
 !Note: This bot will break when attempting to perform a trade and no hiveaccount with a postingkey and activekey is provided.
 
