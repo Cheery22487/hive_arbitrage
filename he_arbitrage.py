@@ -18,7 +18,7 @@ pool_rpc = "https://engine.beeswap.tools"
 hive = Hive(keys=[account[2],account[1]],node=NODE)
 
 HIVE_TESTAMOUNT = 5                         #amount of hive initially tested in swawps/trades
-MAXIMUM_TRADEAMOUNT = 15                    #absolute maximum amount of hive wagered per trade, atleast 5
+MAXIMUM_TRADEAMOUNT = 10                    #absolute maximum amount of hive wagered per trade
 MAXIMUM_SHARE_TRADED = 0.1                  #maximum share of owned hive wagered per trade
 
 tokenlist = ["DEC","SPS","BEE","SWAP.USDT","SWAP.BTC","VOUCHER","SWAP.DOGE","SWAP.LTC","SWAP.HBD","SWAP.ETH","PART","SHARD","SWAP.BNB","CHAOS","BEE","LEO","LGN","SWAP.BLURT"]
