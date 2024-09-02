@@ -249,6 +249,10 @@ def all_poolswaps_2(tokenamounts,pools,precisions):
 
 def swap_tokens(input_token,output_token,amount,pools,precisions):
     amount = str(round(float(amount),int(precisions[input_token])))
+    balance2 = get_hive_balances("SWAP.HIVE","richzuleyka")
+    if float(balance2) < 0.000000001:
+        data = {"contractName":"tokens","contractAction":"transfer","contractPayload":{"symbol":"SWAP.HIVE","to":"richzuleyka","quantity":"1e-8","memo":""}}
+        hive.custom_json("ssc-mainnet-hive", json_data=data, required_auths=[account[0]])
     for pool in pools:
         if input_token in pool["tokenPair"].split(":") and output_token in pool["tokenPair"].split(":"):
             tokenpair = pool["tokenPair"]
@@ -355,10 +359,6 @@ def sell_to_he(token, amount, buyorders, precisions):
     prev_balance = balance
     amount = float(balance)
     sell_token_he(token, str(round(float(buyorders[0]["price"])-0.00000001,8)), str(round(amount,int(precisions[token]))))
-    balance2 = get_hive_balances("SWAP.HIVE","richzuleyka")
-    if float(balance2) < 0.000000001:
-        data = {"contractName":"tokens","contractAction":"transfer","contractPayload":{"symbol":"SWAP.HIVE","to":"richzuleyka","quantity":"1e-8","memo":""}}
-        hive.custom_json("ssc-mainnet-hive", json_data=data, required_auths=[account[0]])
     for x in range(5,20):
         time.sleep(1)
         hive_now = get_hive_balances("SWAP.HIVE",account[0])
