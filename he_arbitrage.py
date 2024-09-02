@@ -21,10 +21,7 @@ MAXIMUM_SHARE_TRADED = 0.1                  #maximum share of owned hive wagered
 
 tokenlist = ["DEC","SPS","BEE","SWAP.USDT","SWAP.BTC","VOUCHER","SWAP.DOGE","SWAP.LTC","SWAP.HBD","SWAP.ETH","PART","SHARD","SWAP.BNB","CHAOS","BEE","LEO","LGN","SWAP.BLURT"]
 
-#bannedpools = ["DEC:SUFB","SWAP.HIVE:SWAP.WAX","BEE:SWAP.WAX","SPS:SWAP.WAX","SPS:SWAP.SLP","SWAP.AXS:SWAP.SLP","SPS:SWAP.AXS","SPS:SWAP.GALA","SPS:FSPS","STARBITS:SWAP.HBD","DEC:VOID","SWAP.HIVE:SEED","SWAP.HBD:SEED"]
 bannedpools = []
-
-testasfdsg = 1
 
 def get_hive_balances(token,name):
     try:
