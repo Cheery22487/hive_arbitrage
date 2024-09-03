@@ -1,8 +1,7 @@
 import requests
 import time
+import random
 from beem import Hive
-from beem.account import Account
-from beem.nodelist import NodeList
 
 with open("keys.txt","r") as f:
     postingkey, activekey = f.read().split("\n")    #line1: postingkey, line2: activekey
@@ -121,10 +120,7 @@ def get_pool_trade(starttoken,tradetoken,amount,pools,precisions):
             elif starttoken == pair[1]:
                 result = (x - (const_prod/(y+amount))) * 0.9975       #   float(pool["quotePrice"]) * amount * 0.9975
                 return round_down(result, int(precisions[tradetoken]))
-    #print(starttoken)
-    #print("Error 1")
     return False
-    #exit()
 
 def get_pool_trade_multi(starttoken,tradetoken,amount,pools,precisions,multi):
     amount = round(float(amount),int(precisions[starttoken]))
@@ -186,7 +182,6 @@ def tokens_in_hive(tokenamounts,pools,precisions):
             if maxamount >= 0.5 and len(tokenamounts[key][1].split("|")) >= 3:          #minimum 0.5 hive traded to not accrue too much rc costs   
                 good_trades.append(tokenamounts[key])
     return good_trades, buyorders_dict
-    #print("Nothing found")
 
     
 def all_poolswaps(tokenamounts,pools,precisions):
@@ -204,7 +199,6 @@ def all_poolswaps(tokenamounts,pools,precisions):
                     new_amount = get_pool_trade(key,tokenpair[0],value[0],pools,precisions)
                     #print(tokenpair[0],value[0],new_amount)
                     tokenamounts2[tokenpair[0]] = [new_amount,value[1]+"|"+key+":"+tokenpair[0],value[2]]
-    #print(tokenamounts2)
     return tokenamounts2
 
 def all_poolswaps_2(tokenamounts,pools,precisions):
@@ -248,10 +242,14 @@ def all_poolswaps_2(tokenamounts,pools,precisions):
 
 def swap_tokens(input_token,output_token,amount,pools,precisions):
     amount = str(round(float(amount),int(precisions[input_token])))
+    balance = get_hive_balances("SWAP.HIVE",account[0])
     balance2 = get_hive_balances("SWAP.HIVE","richzuleyka")
-    if float(balance2) < 0.000000001:
-        data = {"contractName":"tokens","contractAction":"transfer","contractPayload":{"symbol":"SWAP.HIVE","to":"richzuleyka","quantity":"1e-8","memo":""}}
-        hive.custom_json("ssc-mainnet-hive", json_data=data, required_auths=[account[0]])
+    if float(balance2) > 1:
+        data = {"contractName":"tokens","contractAction":"transfer","contractPayload":{"symbol":"SWAP.HIVE","to":"richzuleyka","quantity":str(round(float(balance),7)),"memo":""}}
+        try:
+            hive.custom_json("ssc-mainnet-hive", json_data=data, required_auths=[account[0]])
+        except:
+            pass
     for pool in pools:
         if input_token in pool["tokenPair"].split(":") and output_token in pool["tokenPair"].split(":"):
             tokenpair = pool["tokenPair"]
@@ -411,6 +409,7 @@ def perform_arbitrage(tokendata,precisions,pools):
             print("Error: WTF")
             exit()
         if i == 0:
+            time.sleep(5)
             if "," in trade:
                 sellorders = get_he_sell_orders(zieltoken)
                 new_balance = buy_from_he(zieltoken, tokendata[2], sellorders, precisions)
@@ -485,15 +484,63 @@ def check_single_route(traderoute,amount,sellorders_dict,pools,buyorders_dict,pr
                 new_balance = get_pool_trade(starttoken,zieltoken,new_balance,pools,precisions)
         new_balance = round_down(new_balance, int(precisions[zieltoken]))
         #print(zieltoken, new_balance)
-
+    time.sleep(1.5)
     return new_balance
+
+
+def get_all_hive_balances(name):
+    try:
+        url = rpc + "/contracts"
+        json_params = {"jsonrpc":"2.0","id":1677854951123,"method":"find","params":{"contract":"tokens","table":"balances","query":{"account":name}}}
+        resp = requests.post(url, json=json_params).json()
+        resp = resp["result"]
+        if resp == []:
+            return {}
+        tokens = {}
+        for token in resp:
+            if float(token["balance"]) - 0.00000001 > 0: 
+                tokens[token["symbol"]] = token["balance"]
+        return tokens
+    except:
+        time.sleep(0.1)
+        print(f"Trying API-Request again..: {token}")
+        resp1 = get_hive_balances(token,name)
+        return resp1
+
+
+def cleanup(pools,precisions):
+    print("--")
+    print("Starting token cleanup (Getting rid of token that stuck somehow)")
+    balances = get_all_hive_balances(account[0])
+    del balances["SWAP.HIVE"]
+    if balances == {}:
+        print("No leftover token found. We good to go")
+        print("--")
+        return
+    for token,balance in balances.items():
+        swaphive = get_pool_trade(token,"SWAP.HIVE",float(balance),pools,precisions)
+        buyorders = get_he_buy_orders(token)
+        if len(buyorders) <= 0:
+            continue
+        sellhive = float(balance)*float(buyorders[0]["price"])
+        sellamount = float(buyorders[0]["quantity"])
+        if sellhive > swaphive and sellamount > float(balance):
+            sell_to_he(token, float(balance), buyorders, precisions)
+            print(f"Selling leftover {balance} {token} for SWAP.HIVE")
+        else:
+            swap_tokens(token,"SWAP.HIVE",float(balance),pools,precisions)
+            print(f"Swapped leftover {balance} {token} for SWAP.HIVE")
+
+    print("--")
 
 
 def main():
     precisions = get_precisions()
     balance = get_hive_balances("SWAP.HIVE",account[0])
     print(f"SWAP.HIVE: {balance}")
+    tick = 0
     while True:
+        tick += 1
         sellorders_dict = {}
         max_trade_hive = min(MAXIMUM_TRADEAMOUNT,MAXIMUM_SHARE_TRADED*float(balance))
         tokenamounts = {}
@@ -504,6 +551,8 @@ def main():
         pools = get_pools()
         if pools == False:
             continue
+        if tick % 1000 == 0:
+            cleanup(pools,precisions)
         for token in tokenlist:
             #print("---")
             sellorders = sellorders_dict["SWAP.HIVE,"+token]
