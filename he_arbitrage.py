@@ -18,7 +18,7 @@ HIVE_TESTAMOUNT = 5                         #amount of hive initially tested in 
 MAXIMUM_TRADEAMOUNT = 10                    #absolute maximum amount of hive wagered per trade
 MAXIMUM_SHARE_TRADED = 0.1                  #maximum share of owned hive wagered per trade
 
-tokenlist = ["DEC","SPS","BEE","SWAP.USDT","SWAP.BTC","VOUCHER","SWAP.DOGE","SWAP.LTC","SWAP.HBD","SWAP.ETH","PART","SHARD","SWAP.BNB","CHAOS","BEE","LEO","LGN","SWAP.BLURT"]
+tokenlist = ["DEC","SPS","BEE","SWAP.USDT","SWAP.BTC","VOUCHER","SWAP.DOGE","SWAP.LTC","SWAP.HBD","SWAP.ETH","PART","SHARD","SWAP.BNB","BEE","LEO","LGN","SWAP.BLURT"]
 
 bannedpools = []
 
@@ -524,7 +524,7 @@ def cleanup(pools,precisions):
             continue
         sellhive = float(balance)*float(buyorders[0]["price"])
         sellamount = float(buyorders[0]["quantity"])
-        if sellhive > swaphive and sellamount > float(balance):
+        if swaphive == False or (sellhive > swaphive and sellamount > float(balance)):
             sell_to_he(token, float(balance), buyorders, precisions)
             print(f"Selling leftover {balance} {token} for SWAP.HIVE")
         else:
