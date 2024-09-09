@@ -1,6 +1,5 @@
 import requests
 import time
-import random
 from beem import Hive
 
 with open("keys.txt","r") as f:
@@ -179,7 +178,7 @@ def tokens_in_hive(tokenamounts,pools,precisions):
                 tokenamounts[key][0] = he_hive
                 tokenamounts[key][2] = maxamount
             #preventing the most simple case of buy on market & then sell in pool or the other way around. Other bots seem to be faster and it often ends up a losing venture
-            if maxamount >= 0.5 and len(tokenamounts[key][1].split("|")) >= 3:          #minimum 0.5 hive traded to not accrue too much rc costs   
+            if maxamount >= 0.5 and len(tokenamounts[key][1].split("|")) >= 3:          #minimum 0.5 hive traded to not accrue too much rc costs
                 good_trades.append(tokenamounts[key])
     return good_trades, buyorders_dict
 
@@ -260,8 +259,8 @@ def swap_tokens(input_token,output_token,amount,pools,precisions):
         print(err)
 
     time.sleep(3)
-    balance = 0
-    while float(balance) <= 0.00000002 or balance == "0":
+    start = time.time()
+    while float(balance) <= 0.00000002 or balance == "0" and time.time() - start > 120:
         balance = get_hive_balances(output_token,account[0])
         time.sleep(0.5)
     #print(balance)
@@ -503,8 +502,8 @@ def get_all_hive_balances(name):
         return tokens
     except:
         time.sleep(0.1)
-        print(f"Trying API-Request again..: {token}")
-        resp1 = get_hive_balances(token,name)
+        print("Trying API-Request again..: all balances")
+        resp1 = get_all_hive_balances(name)
         return resp1
 
 
@@ -551,7 +550,7 @@ def main():
         pools = get_pools()
         if pools == False:
             continue
-        if tick % 1000 == 0:
+        if tick % 250 == 0:
             cleanup(pools,precisions)
         for token in tokenlist:
             #print("---")
