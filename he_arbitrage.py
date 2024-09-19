@@ -4,7 +4,8 @@ from beem import Hive
 
 with open("keys.txt","r") as f:
     postingkey, activekey = f.read().split("\n")    #line1: postingkey, line2: activekey
-account = ["cursedellie",postingkey,activekey]
+account = ["cursedellie",postingkey,activekey]      #change accountname
+
 #HIVE_NODE = "https://anyx.io"
 #HIVE_NODE = "https://api.deathwing.me"
 HIVE_NODE = "https://api.hive.blog"
