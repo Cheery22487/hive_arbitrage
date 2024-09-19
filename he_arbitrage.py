@@ -5,13 +5,14 @@ from beem import Hive
 with open("keys.txt","r") as f:
     postingkey, activekey = f.read().split("\n")    #line1: postingkey, line2: activekey
 account = ["cursedellie",postingkey,activekey]
+#HIVE_NODE = "https://anyx.io"
+#HIVE_NODE = "https://api.deathwing.me"
+HIVE_NODE = "https://api.hive.blog"
+HE_NODE = "https://herpc.dtools.dev"
+#HE_NODE = "https://engine.beeswap.tools"
+POOL_NODE = "https://herpc.dtools.dev"
 
-NODE = "https://anyx.io"
-#NODE = "https://api.deathwing.me"
-rpc = "https://herpc.dtools.dev"
-pool_rpc = "https://engine.beeswap.tools"
-
-hive = Hive(keys=[account[2],account[1]],node=NODE)
+hive = Hive(keys=[account[2],account[1]],node=HIVE_NODE)
 
 HIVE_TESTAMOUNT = 5                         #amount of hive initially tested in swawps/trades
 MAXIMUM_TRADEAMOUNT = 10                    #absolute maximum amount of hive wagered per trade
@@ -22,48 +23,45 @@ tokenlist = ["DEC","SPS","BEE","SWAP.USDT","SWAP.BTC","VOUCHER","SWAP.DOGE","SWA
 bannedpools = []
 
 def get_hive_balances(token,name):
-    try:
-        url = rpc + "/contracts"
-        json_params = {"jsonrpc":"2.0","id":1677854951123,"method":"find","params":{"contract":"tokens","table":"balances","query":{"account":name,"symbol":{"$in":[token]}}}}
-        resp = requests.post(url, json=json_params).json()
-        if resp["result"] == []:
-            return 0
-        else:
-            return resp["result"][0]["balance"]
-    except:
-        time.sleep(0.1)
-        print(f"Trying API-Request again..: {token}")
-        resp1 = get_hive_balances(token,name)
-        return resp1
+    while True:
+        try:
+            url = HE_NODE + "/contracts"
+            json_params = {"jsonrpc":"2.0","id":1677854951123,"method":"find","params":{"contract":"tokens","table":"balances","query":{"account":name,"symbol":{"$in":[token]}}}}
+            resp = requests.post(url, json=json_params).json()
+            if resp["result"] == []:
+                return 0
+            else:
+                return resp["result"][0]["balance"]
+        except:
+            time.sleep(0.1)
+            print(f"Trying API-Request again..: {token}")
 
 def get_he_buy_orders(token):
-    try:
-        url = rpc + "/contracts"
-        json_params = {"jsonrpc":"2.0","id":42069,"method":"find","params":
-                       {"contract":"market","query":{"symbol":token},"indexes":[{"index":"priceDec","descending":True}],"limit":1000,"offset":0,"table":"buyBook"}}
-        resp = requests.post(url, json=json_params).json()
-        resp = resp["result"]
-        return resp 
-    except:
-        time.sleep(0.1)
-        resp = get_he_buy_orders(token)
-        return resp
+    while True:
+        try:
+            url = HE_NODE + "/contracts"
+            json_params = {"jsonrpc":"2.0","id":42069,"method":"find","params":
+                        {"contract":"market","query":{"symbol":token},"indexes":[{"index":"priceDec","descending":True}],"limit":1000,"offset":0,"table":"buyBook"}}
+            resp = requests.post(url, json=json_params).json()
+            resp = resp["result"]
+            return resp 
+        except:
+            time.sleep(0.1)
 
 def get_he_sell_orders(token):
-    try:
-        url = rpc + "/contracts"
-        json_params = {"jsonrpc":"2.0","id":42069,"method":"find","params":
-                       {"contract":"market","query":{"symbol":token},"indexes":[{"index":"priceDec","descending":False}],"limit":1000,"offset":0,"table":"sellBook"}}
-        resp = requests.post(url, json=json_params).json()
-        resp = resp["result"]
-        return resp 
-    except:
-        time.sleep(0.1)
-        x = get_he_sell_orders(token)
-        return x
+    while True:
+        try:
+            url = HE_NODE + "/contracts"
+            json_params = {"jsonrpc":"2.0","id":42069,"method":"find","params":
+                        {"contract":"market","query":{"symbol":token},"indexes":[{"index":"priceDec","descending":False}],"limit":1000,"offset":0,"table":"sellBook"}}
+            resp = requests.post(url, json=json_params).json()
+            resp = resp["result"]
+            return resp 
+        except:
+            time.sleep(0.1)
 
 def get_pools():
-    url = pool_rpc + "/contracts"
+    url = POOL_NODE + "/contracts"
     json_params = {"id":0,"jsonrpc":"2.0","method":"find","params":{"contract":"marketpools","table":"pools","query":{},"limit":1000,"offset":0}}
     try:
         resp = requests.post(url, json=json_params).json()
@@ -73,7 +71,7 @@ def get_pools():
         return False
 
 def get_precisions():
-    url = "https://api.hive-engine.com/rpc/contracts"
+    url = HE_NODE + "/contracts"
     json_params = {"id":0,"jsonrpc":"2.0","method":"find","params":{"contract":"tokens","table":"tokens","query":{},"limit":1000,"offset":0}}
     resp = requests.post(url, json=json_params).json()
     resp = resp["result"]
@@ -259,8 +257,9 @@ def swap_tokens(input_token,output_token,amount,pools,precisions):
         print(err)
 
     time.sleep(3)
+    balance = 0
     start = time.time()
-    while float(balance) <= 0.00000002 or balance == "0" and time.time() - start > 120:
+    while (float(balance) <= 0.00000002 or balance == "0") and time.time() - start < 120:
         balance = get_hive_balances(output_token,account[0])
         time.sleep(0.5)
     #print(balance)
@@ -285,36 +284,34 @@ def sell_token_he(token, price, amount):
 
 
 def check_buy_listings(token):
-    try:
-        url = rpc + "/contracts"
-        json_params = {"jsonrpc":"2.0","id":1677853057215,"method":"find","params":
-                       {"contract":"market","query":{"symbol":token},"indexes":[{"index":"priceDec","descending":True}],"limit":1000,"offset":0,"table":"buyBook"}}
-        resp = requests.post(url, json=json_params).json()
-        resp = resp["result"]
-        for listing in resp:
-            if listing["account"] == account[0]:
-                return listing["txId"]
-        return 0
-    except:
-        time.sleep(1)
-        aaa = check_buy_listings(token)
-        return aaa
+    while True:
+        try:
+            url = HE_NODE + "/contracts"
+            json_params = {"jsonrpc":"2.0","id":1677853057215,"method":"find","params":
+                        {"contract":"market","query":{"symbol":token},"indexes":[{"index":"priceDec","descending":True}],"limit":1000,"offset":0,"table":"buyBook"}}
+            resp = requests.post(url, json=json_params).json()
+            resp = resp["result"]
+            for listing in resp:
+                if listing["account"] == account[0]:
+                    return listing["txId"]
+            return 0
+        except:
+            time.sleep(1)
 
 def check_sell_listings(token):
-    try:
-        url = rpc + "/contracts"
-        json_params = {"jsonrpc":"2.0","id":1677853057215,"method":"find","params":
-                       {"contract":"market","query":{"symbol":token},"indexes":[{"index":"priceDec","descending":False}],"limit":1000,"offset":0,"table":"sellBook"}}
-        resp = requests.post(url, json=json_params).json()
-        resp = resp["result"]
-        for listing in resp:
-            if listing["account"] == account[0]:
-                return listing["txId"]
-        return 0
-    except:
-        time.sleep(1)
-        aaa = check_sell_listings(token)
-        return aaa
+    while True:
+        try:
+            url = HE_NODE + "/contracts"
+            json_params = {"jsonrpc":"2.0","id":1677853057215,"method":"find","params":
+                        {"contract":"market","query":{"symbol":token},"indexes":[{"index":"priceDec","descending":False}],"limit":1000,"offset":0,"table":"sellBook"}}
+            resp = requests.post(url, json=json_params).json()
+            resp = resp["result"]
+            for listing in resp:
+                if listing["account"] == account[0]:
+                    return listing["txId"]
+            return 0
+        except:
+            time.sleep(1)
 
 def cancel_listing(buy_ids, book):
     try:
@@ -488,23 +485,22 @@ def check_single_route(traderoute,amount,sellorders_dict,pools,buyorders_dict,pr
 
 
 def get_all_hive_balances(name):
-    try:
-        url = rpc + "/contracts"
-        json_params = {"jsonrpc":"2.0","id":1677854951123,"method":"find","params":{"contract":"tokens","table":"balances","query":{"account":name}}}
-        resp = requests.post(url, json=json_params).json()
-        resp = resp["result"]
-        if resp == []:
-            return {}
-        tokens = {}
-        for token in resp:
-            if float(token["balance"]) - 0.00000001 > 0: 
-                tokens[token["symbol"]] = token["balance"]
-        return tokens
-    except:
-        time.sleep(0.1)
-        print("Trying API-Request again..: all balances")
-        resp1 = get_all_hive_balances(name)
-        return resp1
+    while True:
+        try:
+            url = HE_NODE + "/contracts"
+            json_params = {"jsonrpc":"2.0","id":1677854951123,"method":"find","params":{"contract":"tokens","table":"balances","query":{"account":name}}}
+            resp = requests.post(url, json=json_params).json()
+            resp = resp["result"]
+            if resp == []:
+                return {}
+            tokens = {}
+            for token in resp:
+                if float(token["balance"]) - 0.00000001 > 0: 
+                    tokens[token["symbol"]] = token["balance"]
+            return tokens
+        except:
+            time.sleep(0.1)
+            print("Trying API-Request again..: all balances")
 
 
 def cleanup(pools,precisions):
@@ -537,7 +533,7 @@ def main():
     precisions = get_precisions()
     balance = get_hive_balances("SWAP.HIVE",account[0])
     print(f"SWAP.HIVE: {balance}")
-    tick = 0
+    tick = -1
     while True:
         tick += 1
         sellorders_dict = {}
