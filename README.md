@@ -6,25 +6,24 @@ This is a small arbitrage bot working on the hive blockchain. It is just a small
 # Scope
 This is a proof of concept. Initially, the bot was funded with 10 Hive (equivalent to approximately $2 at the time). While the bot does function as intended and has generated a small profit, it requires a relatively significant one-time initial investment to cover ongoing RC costs (the equivalent of gas fees on the Hive blockchain). It is important to note that there is no exponential scaling or increase in profit from providing additional liquidity. The bot already captures all available arbitrage opportunities within the current system.
 
-# Milestones
-Start: 10 Hive on 11 August 2024
-100 Hive (~20 USD) profit: 22 August 2024
-200 Hive (~40 USD) profit: 07 September 2024
-250 Hive (~50 USD) profit: 29 September 2024
-
-You can see the current amount of Hive using the following link: https://hive-engine.com/@cursedellie/wallet.
-And you can explore the blockchain interactions here: https://hivehub.dev/@cursedellie
-
 # Plot
 
 This is a view of the bots performance since the start.
 
-[Arbitrage Performance](plot/plot.png)
+![Arbitrage Performance](plot/plot.png)
 
 It is interesting to note that the performance has significantly deteriorated since its release on GitHub. Given the number of clones following the published updates and the trading behavior of certain accounts, it can be assumed that several users are currently using this bot or a bot inspired by this release.
 
 These bots are in direct competition with each other, and they can interfere so much that it may even lead to losses.
 
+# Milestones
+Start: 10 Hive on 11 August 2024
+- 100 Hive (~20 USD) profit: 22 August 2024
+- 200 Hive (~40 USD) profit: 07 September 2024
+- 250 Hive (~50 USD) profit: 29 September 2024
+
+You can see the current amount of Hive using the following link: https://hive-engine.com/@cursedellie/wallet.
+And you can explore the blockchain interactions here: https://hivehub.dev/@cursedellie
 
 # Where is the profit coming from?
 There are two main ways of trading tokens. You can use the market with buy- and sellorders (https://hive-engine.com/trade/SWAP.BTC) or use a liquidity pool (https://beeswap.dcity.io/swap?input=SWAP.HIVE&output=SWAP.BTC). As both options are in theory independent of eachother in terms of price discovery, there may arise somewhat significant differences in price.
