@@ -6,7 +6,7 @@ This is a small arbitrage bot working on the hive blockchain. It is just a small
 # Scope
 This is a proof of concept. Initially, the bot was funded with 10 Hive (equivalent to approximately $2 at the time). While the bot does function as intended and has generated a small profit, it requires a relatively significant one-time initial investment to cover ongoing RC costs (the equivalent of gas fees on the Hive blockchain). It is important to note that there is no exponential scaling or increase in profit from providing additional liquidity. The bot already captures all available arbitrage opportunities within the current system.
 
-# Plot
+# How its going
 
 This is a view of the bots performance since the start.
 
