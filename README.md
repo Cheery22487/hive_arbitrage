@@ -8,7 +8,7 @@ This is a proof of concept. Initially, the bot was funded with 10 Hive (equivale
 
 # How its going
 
-This is a view of the bots performance since the start.
+This is a visualization of the bot's performance since its launch.
 
 ![Arbitrage Performance](plot/plot.png)
 
@@ -26,7 +26,7 @@ You can see the current amount of Hive using the following link: https://hive-en
 And you can explore the blockchain interactions here: https://hivehub.dev/@cursedellie
 
 # Where is the profit coming from?
-There are two main ways of trading tokens. You can use the market with buy- and sellorders (https://hive-engine.com/trade/SWAP.BTC) or use a liquidity pool (https://beeswap.dcity.io/swap?input=SWAP.HIVE&output=SWAP.BTC). As both options are in theory independent of eachother in terms of price discovery, there may arise somewhat significant differences in price.
+There are two main ways of trading tokens on the Hive Blockchain or more specifically the Hive Engine sidechain. You can use the market with buy- and sellorders (https://hive-engine.com/trade/SWAP.BTC) or use a liquidity pool (https://beeswap.dcity.io/swap?input=SWAP.HIVE&output=SWAP.BTC). As both options are in theory independent of eachother in terms of price discovery, there may arise somewhat significant differences in price.
 
 For example: If a person has a lot of Bitcoin and sells them on the market, it will lower the price of bitcoin on the market. The price in the liquidity pool however remains unchanged. If you are the first one to notice such a case, you can buy BTC at a lower price on the open market, swap it back to your starting currency using a liquidity pool and make a profit.
 
