@@ -1,7 +1,7 @@
 set terminal png
 set output 'plot.png'
 set title "Bot performance"
-set xlabel "Days"
+set xlabel "Days since start"
 set ylabel "Hive"
 set key at screen 0.42, 0.87
 #set grid
