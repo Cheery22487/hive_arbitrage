@@ -12,7 +12,7 @@ This is a view of the bots performance since the start.
 
 ![Arbitrage Performance](plot/plot.png)
 
-It is interesting to note that the performance has significantly deteriorated since its release on GitHub. Given the number of clones following the published updates and the trading behavior of certain accounts, it can be assumed that several users are currently using this bot or a bot inspired by this release.
+It is interesting to note that the performance has significantly deteriorated following its release on GitHub. Given the number of clones following the published updates and the trading behavior of certain accounts, it can be assumed that several users are currently using this bot or a bot inspired by this release.
 
 These bots are in direct competition with each other, and they can interfere so much that it may even lead to losses.
 
